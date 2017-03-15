@@ -1,0 +1,168 @@
+﻿<div>
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">
+                Sales <small>New</small>
+            </h1>
+        </div>
+    </div>
+</div>
+<div id="errorMessage" class="alert alert-danger" role="alert" hidden></div>
+<div id="sucessMessage" class="alert alert-success" role="alert" hidden></div>
+<div>
+    <table id="packagesTable" class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Fruit</th>
+                <th>Unit Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: SalesItems">
+            <tr>
+                <td>
+                    <select class="fruitSelect form-control" data-bind="options: $root.AvailableFruits, optionsText: 'Name',
+                                           value: FruitId, optionsValue:'Id'"></select>
+                </td>
+                <td>
+                    <input type="number" step="0.01" data-bind="value: UnitPrice" class="package form-control" />
+                </td>
+                <td>
+                    <input type="number" data-bind="value: Quantity" class="package form-control" />
+                </td>
+                <td><input data-bind="value: Total" class="package form-control" disabled /></td>
+                <td>
+                    <img data-bind="click: $root.DeleteItem" width="25" height="25" src="~/Content/Images/removeIcon.png" />
+                </td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="2">
+                    <div style="text-align:left">
+                        <strong>Grand Total</strong>
+                    </div>
+                </td>
+                <td>
+                    <div style="text-align:right">
+                        <strong><span data-bind="text: QuantityTotal"></span></strong>
+                    </div>
+                </td>
+                <td>
+                    <div style="text-align:right">
+                        <strong><span data-bind="text: GrandTotal"></span></strong>
+                    </div>
+                </td>
+                <td>
+                    <img data-bind="click: AddItem" width="25" height="25" src="~/Content/Images/addIcon.png" />
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<br />
+<hr />
+<div>
+    <br />
+    <button id="buttonProcess" data-bind="click: ProcessSale" class="btn btn-primary" type="button">Process Sale</button>
+    <img data-bind="visible: Searching" width="25" height="25" src="~/Content/Images/loading.gif" />
+    <a href="/Home/Index" class="btn btn-default">Back</a>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        console.log('ready!');
+
+        // Activates knockout.js
+        var SalesHub = new SalesHub();
+        ko.applyBindings(SalesHub);
+        SalesHub.SalesItems.push(new SalesItem());
+
+        GetFruitsAvailable();
+        function GetFruitsAvailable() {
+            $.ajax({
+                url: '/Fruits/_GetFruits',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    SalesHub.AvailableFruits(data);
+                    console.log(data);
+                },
+                error: function () {
+
+                },
+            });
+        }
+
+        //Main ViewModel
+        function SalesHub() {
+            var self = this;
+            self.SalesItems = ko.observableArray();
+            self.Searching = ko.observable(false);
+            self.AvailableFruits = ko.observableArray();
+            self.QuantityTotal = ko.computed(function () {
+                var total = 0;
+                for (var p = 0; p < self.SalesItems().length; ++p) {
+                    total += parseInt(self.SalesItems()[p].Quantity());
+                }
+                return total;
+            });
+            self.GrandTotal = ko.computed(function () {
+                var total = 0;
+                for (var p = 0; p < self.SalesItems().length; ++p) {
+                    total = parseFloat(parseFloat(total) + parseFloat(self.SalesItems()[p].Total())).toFixed(2);
+                }
+                return total;
+            });
+
+            self.AddItem = function () {
+                self.SalesItems.push(new SalesItem());
+            }
+
+            self.DeleteItem = function (item) {
+                if (self.SalesItems().length > 1) {
+                    self.SalesItems.remove(item);
+                }
+            }
+
+            self.ProcessSale = function () {
+                $('#errorMessage').hide();
+                $('#sucessMessage').hide();
+                var json = ko.toJSON(self.SalesItems());
+                self.Searching(true);
+                $.ajax({
+                    url: '/Sales/_ProcessSale',
+                    type: 'POST',
+                    data: { 'saleItems': json },
+                    success: function (data) {
+                        self.Searching(false);
+                        $('#sucessMessage').show();
+                        $('#sucessMessage').html(data);
+                        self.SalesItems.removeAll();
+                        self.SalesItems.push(new SalesItem());
+                    },
+                    error: function (request, status, error) {
+                        console.log(request.responseText);
+                        $('#errorMessage').show();
+                        $('#errorMessage').html(request.responseText);
+                        self.Searching(false);
+                    }
+                });
+            }
+        }
+
+        //ViewModel
+        function SalesItem() {
+            var self = this;
+            self.UnitPrice = ko.observable(0);
+            self.Quantity = ko.observable(0);
+            self.Total = ko.computed(function () {
+                return parseFloat(self.UnitPrice() * parseInt(self.Quantity())).toFixed(2);
+            }, self);
+            self.FruitId = ko.observable();
+        }
+    });
+</script>
+

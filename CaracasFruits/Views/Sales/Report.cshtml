@@ -1,0 +1,54 @@
+﻿<div>
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">
+                Sales <small>Report</small>
+            </h1>
+        </div>
+    </div>
+</div>
+<div>
+    <div class="row">
+        <div class="col-lg-3">
+            From:
+            <input id="fromDate" type='text' class="form-control"  />
+        </div>
+        <div class="col-lg-4">
+            To:
+            <input id="toDate" type='text' class="form-control" />
+        </div>
+        <div class="col-lg-4" style="padding-top:20px">
+            <button id="buttonProcess" class="btn btn-primary" type="button">GetReport</button>
+            <a href="/Home/Index" class="btn btn-default">Back</a>
+        </div>
+    </div>
+    <hr />
+    <div id="reportData">
+
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $('#fromDate').datetimepicker({ format: 'MM/DD/YYYY' });
+        $('#toDate').datetimepicker({ format: 'MM/DD/YYYY', useCurrent: false });
+
+        $("#fromDate").on("dp.change", function (e) {
+            $('#toDate').data("DateTimePicker").minDate(e.date);
+        });
+        $("#toDate").on("dp.change", function (e) {
+            $('#fromDate').data("DateTimePicker").maxDate(e.date);
+        });
+
+        $('#buttonProcess').click(function () {
+            var from = $('#fromDate').val();
+            var to = $('#toDate').val();
+            if (from.length > 0 && to.length > 0) {
+                $("#reportData").load('@(Url.Action("_Report", "Sales",null, Request.Url.Scheme))?from=' + from + '&to=' + to);
+            }
+            else {
+                alert('Please check the values');
+            }
+        })
+    })
+</script>
+

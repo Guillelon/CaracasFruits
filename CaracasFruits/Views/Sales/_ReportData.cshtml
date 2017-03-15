@@ -1,0 +1,82 @@
+﻿@model IList<DAL.DTOs.FruitSale>
+<div class="row">
+    <div class="col-lg-6">
+        @if (Model.Count > 0)
+        {
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>
+                            Fruit
+                        </th>
+                        <th>
+                            Total Quanity
+                        </th>
+                        <th>
+                            Total Amount
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                {
+                        <tr>
+                            <td>@item.FruitName</td>
+                            <td>@item.TotalQuantity</td>
+                            <td>@item.TotalAmount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div style="text-align:center">There's no data for the selected range.</div>
+        }
+    </div>
+    <div class="col-lg-6">
+        <div>
+            <canvas id="salesChart" width="200" height="200"></canvas>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        var fruits = @Html.Raw(Json.Encode(Model.Select(f => f.FruitName)));
+        var sales = @Html.Raw(Json.Encode(Model.Select(f => f.TotalAmount)));
+        var ctx = document.getElementById("salesChart").getContext("2d");
+        var salesChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: fruits,
+                datasets: [
+                    {
+                        label: "",
+                        backgroundColor: [
+                            'rgb(102, 204, 255)',
+                            'rgb(204, 204, 255)',
+                            'rgb(255, 153, 204)',
+                            'rgb(255, 204, 102)',
+                            'rgb(102, 255, 51)',
+                        ],
+                        borderColor: [
+                            'rgb(102, 204, 255)',
+                            'rgb(204, 204, 255)',
+                            'rgb(255, 153, 204)',
+                            'rgb(255, 204, 102)',
+                            'rgb(102, 255, 51)',
+                        ],
+                        borderWidth: 1,
+                        data: sales
+                    }
+                ]
+            },
+            options: {
+                maintainAspectRatio: false,
+                legend: {
+                    display: true
+                }
+            }
+        });
+    });
+</script>

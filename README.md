@@ -1,5 +1,5 @@
 # CaracasFruits
-This is an exercise to test my skills.
+This is an exercise to test my skills. Feel free to download it and test. 
 
 So this is an Asp.Net MVC 5 project, the DB is on SQL Server using EF as ORM with Code First Migration, for the desing and look I used Twitter Bootstrap.
 

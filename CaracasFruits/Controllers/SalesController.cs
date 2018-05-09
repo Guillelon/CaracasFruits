@@ -38,7 +38,7 @@ namespace CaracasFruits.Controllers
                 var sale = new Sale();
                 sale.SaleItems = salestemsModel;
                 _repository.Create(sale);
-                return "The sale was processed with a total amount of $" + salestemsModel.Sum(s => s.Total);
+                return "The sale was processed with a total amount of $" + salestemsModel.Sum(s => s.Total) + ". You can review the sale at the report dashboard";
             }
             catch (JsonReaderException e)
             {
